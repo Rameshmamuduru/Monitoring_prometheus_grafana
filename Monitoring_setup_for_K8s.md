@@ -332,5 +332,16 @@ admin / prom-operator
 
 ---
 
+#### Note
+
+```
+Nodes → node-exporter → Prometheus
+Pods → kubelet/cAdvisor → Prometheus
+Objects → kube-state-metrics → Prometheus
+Apps → ServiceMonitor → Prometheus
+
+Prometheus → Grafana
+```
+
 
 
