@@ -225,3 +225,194 @@ prom-operator
 ```
 
 
+
+# STEP 3 — Create DNS Record
+
+# ===============================
+
+Create A record:
+
+```
+grafana.yourdomain.com → ingress LB IP/DNS
+```
+
+( Route53 / Cloudflare / GoDaddy )
+
+Wait 1–2 mins.
+
+---
+
+# ===============================
+
+# STEP 4 — Install cert-manager
+
+# ===============================
+
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.3/cert-manager.yaml
+```
+
+Verify:
+
+```bash
+kubectl get pods -n cert-manager
+```
+
+---
+
+# ===============================
+
+# STEP 5 — Create Let's Encrypt Issuer
+
+# ===============================
+
+```bash
+nano issuer.yaml
+```
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: you@example.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
+
+Apply:
+
+```bash
+kubectl apply -f issuer.yaml
+```
+
+---
+
+# STEP 7 — Create Basic Auth
+
+```bash
+sudo apt install apache2-utils -y
+```
+
+```bash
+htpasswd -c auth admin
+```
+
+```bash
+kubectl create secret generic grafana-auth \
+--from-file=auth -n monitoring
+```
+
+---
+
+# ===============================
+
+# STEP 8 — Create Grafana Ingress (TLS + Auth)
+
+# ===============================
+
+```bash
+nano grafana-ingress.yaml
+```
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: monitoring
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: grafana-auth
+    nginx.ingress.kubernetes.io/auth-realm: "Restricted"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - grafana.yourdomain.com
+    secretName: grafana-tls
+  rules:
+  - host: grafana.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: monitoring-grafana
+            port:
+              number: 80
+```
+
+Apply:
+
+```bash
+kubectl apply -f grafana-ingress.yaml
+```
+
+---
+
+# ===============================
+
+# STEP 9 — Wait for TLS
+
+# ===============================
+
+```bash
+kubectl get certificate -n monitoring
+```
+
+Wait until:
+
+```
+READY True
+```
+
+---
+
+# ===============================
+
+# STEP 10 — Access Grafana
+
+# ===============================
+
+Browser:
+
+```
+https://grafana.yourdomain.com
+```
+
+Login:
+
+### NGINX:
+
+admin / yourpassword
+
+### Grafana:
+
+admin / prom-operator
+
+---
+
+# 🎉 DONE — YOU NOW HAVE
+
+✅ Prometheus real-time metrics
+✅ Grafana dashboards
+✅ NGINX ingress
+✅ HTTPS
+✅ Authentication
+✅ DNS
+✅ Production architecture
+
+---
+
+
+
