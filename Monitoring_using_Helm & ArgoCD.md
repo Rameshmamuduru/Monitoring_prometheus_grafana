@@ -1,6 +1,4 @@
-Perfect 😄 — here’s a **full, ready-to-use GitOps setup** for **monitoring your existing applications** with **Prometheus + Grafana** using **Helm + Argo CD**, with clear folder structure and code you can commit to your Git repo.
 
----
 
 ## **1️⃣ Git Repo Structure**
 
