@@ -71,5 +71,27 @@ Absolutely! Let’s lay out a **real-time production-ready monitoring setup** fo
 * **kubectl / Ansible → K8s API**: 6443 (control plane)
 * **Apps**: open ports only for intended access (e.g., 80, 8080, 3000)
 
+
+```
+EC2 / VM
+ ├── Node Exporter (9100)
+ ├── cAdvisor (8080)
+ ├── Docker Engine (9323)
+
+Kubernetes Nodes
+ ├── Kubelet (10250)
+ ├── Node Exporter
+ ├── cAdvisor
+
+Kubernetes Cluster
+ ├── kube-state-metrics
+ ├── metrics-server
+ ├── application /metrics
+
+Monitoring Server
+ ├── Prometheus (9090)
+ ├── Alertmanager (9093)
+ └── Grafana (3000)
+```
 ---
 
